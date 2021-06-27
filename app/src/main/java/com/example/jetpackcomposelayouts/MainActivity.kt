@@ -14,6 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.Stable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -22,9 +23,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.*
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.max
+import androidx.compose.ui.unit.*
 import com.example.jetpackcomposelayouts.ui.theme.JetpackComposeLayoutsTheme
 import com.google.accompanist.coil.rememberCoilPainter
 import kotlinx.coroutines.launch
@@ -129,8 +128,22 @@ fun BodyContent(modifier: Modifier = Modifier) {
 //        Text("We've done it by hand!")
 //    }
 
-    Row(modifier = modifier.horizontalScroll(rememberScrollState())) {
-        StaggeredGrid(modifier = modifier) {
+//    Row(modifier = modifier.horizontalScroll(rememberScrollState())) {
+//        StaggeredGrid(modifier = modifier) {
+//            for (topic in topics) {
+//                Chip(modifier = Modifier.padding(8.dp), text = topic)
+//            }
+//        }
+//    }
+
+    Row(
+        modifier = modifier
+            .background(color = Color.LightGray)
+            .padding(16.dp)
+            .size(200.dp)
+            .horizontalScroll(rememberScrollState())
+    ) {
+        StaggeredGrid {
             for (topic in topics) {
                 Chip(modifier = Modifier.padding(8.dp), text = topic)
             }
@@ -359,3 +372,44 @@ val topics = listOf(
     "Design", "Fashion", "Film", "History", "Maths", "Music", "People", "Philosophy",
     "Religion", "Social sciences", "Technology", "TV", "Writing"
 )
+
+@Stable
+fun Modifier.padding(all: Dp) =
+    this then PaddingModifier(start = all, top = all, end = all, bottom = all, rtlAware = true)
+
+private class PaddingModifier(
+    val start: Dp = 0.dp,
+    val top: Dp = 0.dp,
+    val end: Dp = 0.dp,
+    val bottom: Dp = 0.dp,
+    val rtlAware: Boolean
+) : LayoutModifier {
+
+    override fun MeasureScope.measure(
+        measurable: Measurable,
+        constraints: Constraints
+    ): MeasureResult {
+        val horizontal = start.roundToPx() + end.roundToPx()
+        val vertical = top.roundToPx() + bottom.roundToPx()
+        val placeable = measurable.measure(constraints.offset(-horizontal, -vertical))
+        val width = constraints.constrainWidth(placeable.width + horizontal)
+        val height = constraints.constrainHeight(placeable.height + vertical)
+        return layout(width, height) {
+            if (rtlAware) {
+                placeable.placeRelative(start.roundToPx(), top.roundToPx())
+            } else {
+                placeable.place(start.roundToPx(), top.roundToPx())
+            }
+        }
+    }
+
+}
+
+
+
+
+
+
+
+
+
